@@ -54,31 +54,38 @@ TEST(CostFunctionTest, PathLengthMultipleTest)
 
     EXPECT_DOUBLE_EQ(actual_length, expected_length);
 }
-// // Test case for path_smoothness
-// TEST(CostFunctionTest, PathSmoothnessTest)
-// {
-//     // Create an instance of the class being tested
-//     plansys2_actions_cost::PathSmoothness path_smoothness;
+// Test case for path_smoothness
+TEST(CostFunctionTest, PathSmoothnessTest)
+{
+    plansys2_actions_cost::PathSmoothness path_smoothness;
+    nav_msgs::msg::Path::SharedPtr path_ptr(new nav_msgs::msg::Path);
 
-//     // Create a sample path
-//     nav_msgs::msg::Path path;
-//     geometry_msgs::msg::PoseStamped pose1, pose2;
-//     pose1.pose.position.x = 0.0;
-//     pose1.pose.position.y = 0.0;
-//     pose2.pose.position.x = 1.0;
-//     pose2.pose.position.y = 1.0;
-//     path.poses.push_back(pose1);
-//     path.poses.push_back(pose2);
+    path_ptr->poses.resize(2);
 
-//     // Calculate the expected smoothness
-//     double expected_smoothness = 0.0; // TODO: Calculate the expected smoothness
+    // Rotation of 10° around the z axis
+    path_ptr->poses[0].pose.position.x = 1.0;
+    path_ptr->poses[0].pose.position.y = 0.0;
+    path_ptr->poses[0].pose.orientation.z = 0.08715574;  
+    path_ptr->poses[0].pose.orientation.w = 0.9961947;  
+    
+    // Rotation of 30° around the z axis
+    path_ptr->poses[1].pose.position.x = 2.0;
+    path_ptr->poses[1].pose.position.y = 0.0;
+    path_ptr->poses[1].pose.orientation.z = 0.25881905;  
+    path_ptr->poses[1].pose.orientation.w = 0.96592583;  
 
-//     // Call the function being tested
-//     double actual_smoothness = path_smoothness.path_smoothness(path);
 
-//     // Check if the actual smoothness matches the expected smoothness
-//     EXPECT_DOUBLE_EQ(actual_smoothness, expected_smoothness);
-// }
+    double expected_smoothness = 20.0 * (M_PI / 180.0);
+
+    auto path_smoothness_cost_function = path_smoothness.args_binder(std::ref(path_ptr));
+
+    double actual_smoothness = path_smoothness_cost_function()->nominal_cost;
+
+    double tolerance = 1e-5;
+    EXPECT_NEAR(actual_smoothness, expected_smoothness, tolerance);
+
+    // EXPECT_DOUBLE_EQ(actual_smoothness, expected_smoothness);
+}
 
 int main(int argc, char** argv)
 {
