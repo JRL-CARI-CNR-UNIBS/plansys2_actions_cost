@@ -1,3 +1,4 @@
+/*
 #ifndef PLANSYS2_ACTIONS_COST__BASE_COST_HPP_
 #define PLANSYS2_ACTIONS_COST__BASE_COST_HPP_
 
@@ -27,4 +28,4 @@ namespace plansys2_actions_cost
 } // namespace plansys_actions_cost
 
 #endif  // PLANSYS2_ACTIONS_COST__BASE_COST_HPP_
-
+*/

@@ -1,3 +1,4 @@
+/*
 #ifndef PLANSYS2_ACTIONS_COST__PATH_LENGTH2_HPP_
 #define PLANSYS2_ACTIONS_COST__PATH_LENGTH2_HPP_
 
@@ -23,5 +24,5 @@ namespace plansys2_actions_cost
 } // namespace plansys_actions_cost
 
 #endif  // PLANSYS2_ACTIONS_COST__PATH_LENGTH2_HPP_
-
+*/
 
