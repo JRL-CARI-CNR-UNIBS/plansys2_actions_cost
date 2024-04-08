@@ -88,46 +88,9 @@ TEST(CostFunctionTest, PathSmoothnessTest)
 
     double tolerance = 1e-5;
     EXPECT_NEAR(actual_smoothness, expected_smoothness, tolerance);
-    // EXPECT_DOUBLE_EQ(actual_smoothness, expected_smoothness);
 }
 
-// class CostFunctionTest_PathCostTest_Test : public ::testing::Test {
-// protected:
-//     void SetUp() override {
-//         rclcpp::init(0, nullptr);  // Inizializza il nodo ROS
-
-//         // Crea un nodo ROS
-//         auto node = std::make_shared<rclcpp::Node>("test_node");
-
-//         // Crea un WeakPtr utilizzando il nodo ROS
-//         weak_node_ptr = node;
-//     }
-
-//     std::weak_ptr<rclcpp::Node> weak_node_ptr;
-// };
-
-// // Classe mock per il subscriber del costmap
-// class MockCostmapSubscriber : public nav2_costmap_2d::CostmapSubscriber {
-// public:
-//     // Costruttore predefinito
-//     MockCostmapSubscriber() = default;
-
-//     // Costruttore con argomenti
-//     MockCostmapSubscriber(const std::weak_ptr<rclcpp::Node>& wp, const std::string& str) 
-//         : CostmapSubscriber(wp, str) {}  
-// //     std::shared_ptr<nav2_costmap_2d::Costmap2D> getCostmap(){
-// //     // Create a mock costmap with random values
-// //     auto costmap = std::make_shared<nav2_costmap_2d::Costmap2D>(10, 10, 0.05, 0, 0);
-// //     for (unsigned int x = 0; x < costmap->getSizeInCellsX(); ++x) {
-// //         for (unsigned int y = 0; y < costmap->getSizeInCellsY(); ++y) {
-// //             costmap->setCost(x, y, rand() % 255); // Random cost values between 0 and 254
-// //         }
-// //     }
-// //     return costmap;
-// // }
-
-// };
-
+// Test case for path_cost
 TEST(CostFunctionTest, PathCostTest)
 {
     nav_msgs::msg::Path::SharedPtr path_ptr(new nav_msgs::msg::Path);
@@ -182,8 +145,6 @@ TEST(CostFunctionTest, PathCostTest)
 
         auto path_cost_function_lambda_1 = path_cost.args_binder(std::ref(path_ptr), std::ref(costmap), std::ref(lambda_1));
         auto path_cost_function_lambda_2 = path_cost.args_binder(std::ref(path_ptr), std::ref(costmap), std::ref(lambda_2));
-        // std::cerr << &path_cost_function_lambda_1 << std::endl;
-        // std::cerr << &path_cost_function_lambda_2 << std::endl;
 
         action_cost_lambda_1 = path_cost_function_lambda_1()->nominal_cost;
         action_cost_lambda_2 = path_cost_function_lambda_2()->nominal_cost;
