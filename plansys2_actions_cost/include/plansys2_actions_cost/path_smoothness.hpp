@@ -14,7 +14,6 @@ namespace plansys2_actions_cost
     ActionCostPtr compute_path_smoothness(const nav_msgs::msg::Path::SharedPtr path_ptr);
 } // namespace plansys2_actions_cost
 
-
 namespace plansys2_actions_cost
 {
     ActionCostPtr compute_path_smoothness(const nav_msgs::msg::Path::SharedPtr path_ptr)

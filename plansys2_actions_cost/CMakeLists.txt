@@ -14,6 +14,7 @@ find_package(nav2_msgs REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -25,6 +26,7 @@ set(dependencies
     nav2_costmap_2d
     plansys2_executor
     tf2_geometry_msgs
+    nav2_costmap_2d
 )
 
 include_directories(include)
