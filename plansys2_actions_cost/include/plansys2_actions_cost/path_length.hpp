@@ -9,8 +9,8 @@
 
 namespace plansys2_actions_cost
 {
-    ActionCostPtr compute_path_length(const nav_msgs::msg::Path::SharedPtr path_ptr);
-    CUSTOM_PLUGIN_GENERATOR(PathLength, &compute_path_length, const nav_msgs::msg::Path::SharedPtr)
+    ActionCostPtr compute_path_length(const nav_msgs::msg::Path::SharedPtr& path_ptr);
+    CUSTOM_PLUGIN_GENERATOR(PathLength, &compute_path_length, const nav_msgs::msg::Path::SharedPtr&)
 } // namespace plansys2_actions_cost
 
 

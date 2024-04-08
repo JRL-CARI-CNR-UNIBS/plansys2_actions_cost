@@ -14,10 +14,10 @@
 
 namespace plansys2_actions_cost
 {
-    ActionCostPtr compute_path_cost(const nav_msgs::msg::Path::SharedPtr path_ptr, 
+    ActionCostPtr compute_path_cost(const nav_msgs::msg::Path::SharedPtr& path_ptr, 
                                     const std::shared_ptr<nav2_costmap_2d::Costmap2D>& costmap,
                                     const double& lambda);
-    CUSTOM_PLUGIN_GENERATOR(PathCost, &compute_path_cost, const nav_msgs::msg::Path::SharedPtr, 
+    CUSTOM_PLUGIN_GENERATOR(PathCost, &compute_path_cost, const nav_msgs::msg::Path::SharedPtr&, 
                                                           const std::shared_ptr<nav2_costmap_2d::Costmap2D>&, 
                                                           const double&)
 } // namespace plansys2_actions_cost

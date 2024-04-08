@@ -2,7 +2,7 @@
 
 namespace plansys2_actions_cost
 {
-ActionCostPtr compute_path_length(const nav_msgs::msg::Path::SharedPtr path_ptr)
+ActionCostPtr compute_path_length(const nav_msgs::msg::Path::SharedPtr& path_ptr)
 {
   ActionCostPtr action_cost = std::make_shared<plansys2_msgs::msg::ActionCost>();
 

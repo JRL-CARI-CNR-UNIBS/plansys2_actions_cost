@@ -11,8 +11,8 @@
 
 namespace plansys2_actions_cost
 {
-    ActionCostPtr compute_path_smoothness(const nav_msgs::msg::Path::SharedPtr path_ptr);
-    CUSTOM_PLUGIN_GENERATOR(PathSmoothness, &compute_path_smoothness, const nav_msgs::msg::Path::SharedPtr)
+    ActionCostPtr compute_path_smoothness(const nav_msgs::msg::Path::SharedPtr& path_ptr);
+    CUSTOM_PLUGIN_GENERATOR(PathSmoothness, &compute_path_smoothness, const nav_msgs::msg::Path::SharedPtr&)
 } // namespace plansys2_actions_cost
 
 #endif  // PLANSYS2_ACTIONS_COST__PATH_SMOOTHNESS_HPP_
