@@ -31,14 +31,7 @@ set(dependencies
 
 include_directories(include)
 
-
-# set(EXECUTOR_SOURCES
-#   src/plansys2_executor/ExecutorClient.cpp
-#   src/plansys2_executor/ActionExecutor.cpp
-#   src/plansys2_executor/ActionExecutorClient.cpp
-# )
-
-add_library(${PROJECT_NAME} SHARED 
+add_library(${PROJECT_NAME} SHARED
   src/path_length.cpp
   src/path_smoothness.cpp
   src/path_cost.cpp)
@@ -64,19 +57,6 @@ install(TARGETS
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
-# if(BUILD_TESTING)
-#   find_package(ament_lint_auto REQUIRED)
-
-#   # the following line skips the linter which checks for copyrights
-#   # comment the line when a copyright and license is added to all source files
-#   set(ament_cmake_copyright_FOUND TRUE)
-#   # the following line skips cpplint (only works in a git repo)
-#   # comment the line when this package is in a git repo and when
-#   # a copyright and license is added to all source files
-#   set(ament_cmake_cpplint_FOUND TRUE)
-#   ament_lint_auto_find_test_dependencies()
-# endif()
-
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
@@ -85,7 +65,6 @@ if(BUILD_TESTING)
 
   add_subdirectory(test)
 endif()
-
 
 ament_export_include_directories(include)
 ament_export_dependencies(${dependencies})
