@@ -39,7 +39,9 @@ include_directories(include)
 # )
 
 add_library(${PROJECT_NAME} SHARED 
-  src/path_length.cpp)
+  src/path_length.cpp
+  src/path_smoothness.cpp
+  src/path_cost.cpp)
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
 add_executable(cost_test
