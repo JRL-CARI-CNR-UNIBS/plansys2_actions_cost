@@ -14,7 +14,6 @@ find_package(nav2_msgs REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-find_package(nav2_costmap_2d REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -26,15 +25,14 @@ set(dependencies
     nav2_costmap_2d
     plansys2_executor
     tf2_geometry_msgs
-    nav2_costmap_2d
 )
 
 include_directories(include)
 
 add_library(${PROJECT_NAME} SHARED
-  src/path_length.cpp
-  src/path_smoothness.cpp
-  src/path_cost.cpp)
+  src/cost_functions/path_length.cpp
+  src/cost_functions/path_smoothness.cpp
+  src/cost_functions/path_cost.cpp)
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
 add_executable(cost_test

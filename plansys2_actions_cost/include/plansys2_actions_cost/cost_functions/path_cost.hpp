@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_ACTIONS_COST__PATH_COST_HPP_
-#define PLANSYS2_ACTIONS_COST__PATH_COST_HPP_
+#ifndef PLANSYS2_ACTIONS_COST__COST_FUNCTIONS__PATH_COST_HPP_
+#define PLANSYS2_ACTIONS_COST__COST_FUNCTIONS__PATH_COST_HPP_
 
 #include <tf2/LinearMath/Quaternion.h>
 #include <memory>
 
-#include "plansys2_actions_cost/cost_function_generator.hpp"
+#include "plansys2_actions_cost/cost_functions/cost_function_generator.hpp"
 
 #include "plansys2_msgs/msg/action_cost.hpp"
 #include "nav2_util/geometry_utils.hpp"
@@ -39,4 +39,4 @@ CUSTOM_PLUGIN_GENERATOR(
   const double &)
 }  // namespace plansys2_actions_cost
 
-#endif  // PLANSYS2_ACTIONS_COST__PATH_COST_HPP_
+#endif  // PLANSYS2_ACTIONS_COST__COST_FUNCTIONS__PATH_COST_HPP_

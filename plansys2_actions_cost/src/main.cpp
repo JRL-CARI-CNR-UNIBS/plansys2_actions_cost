@@ -14,9 +14,9 @@
 
 #include <iostream>
 
-#include "plansys2_actions_cost/path_length.hpp"
-#include "plansys2_actions_cost/path_smoothness.hpp"
-#include "plansys2_actions_cost/path_cost.hpp"
+#include "plansys2_actions_cost/cost_functions/path_length.hpp"
+#include "plansys2_actions_cost/cost_functions/path_smoothness.hpp"
+#include "plansys2_actions_cost/cost_functions/path_cost.hpp"
 
 
 #include "plansys2_msgs/msg/action_cost.hpp"

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_ACTIONS_COST__COST_FUNCTION_GENERATOR_HPP_
-#define PLANSYS2_ACTIONS_COST__COST_FUNCTION_GENERATOR_HPP_
+#ifndef PLANSYS2_ACTIONS_COST__COST_FUNCTIONS__COST_FUNCTION_GENERATOR_HPP_
+#define PLANSYS2_ACTIONS_COST__COST_FUNCTIONS__COST_FUNCTION_GENERATOR_HPP_
 
 #include <utility>
 #include <functional>
@@ -51,4 +51,4 @@ struct PluginGenerator : BaseAbstractClass
 
 }  // namespace plansys2_actions_cost
 
-#endif  // PLANSYS2_ACTIONS_COST__COST_FUNCTION_GENERATOR_HPP_
+#endif  // PLANSYS2_ACTIONS_COST__COST_FUNCTIONS__COST_FUNCTION_GENERATOR_HPP_

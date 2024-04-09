@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_actions_cost/path_cost.hpp"
+#include "plansys2_actions_cost/cost_functions/path_cost.hpp"
 
 namespace plansys2_actions_cost
 {

@@ -12,19 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_ACTIONS_COST__PATH_LENGTH_HPP_
-#define PLANSYS2_ACTIONS_COST__PATH_LENGTH_HPP_
+#ifndef PLANSYS2_ACTIONS_COST__COST_FUNCTIONS__PATH_SMOOTHNESS_HPP_
+#define PLANSYS2_ACTIONS_COST__COST_FUNCTIONS__PATH_SMOOTHNESS_HPP_
 
-#include "plansys2_actions_cost/cost_function_generator.hpp"
+#include <tf2/LinearMath/Quaternion.h>
+
+#include "plansys2_actions_cost/cost_functions/cost_function_generator.hpp"
 
 #include "nav2_util/geometry_utils.hpp"
 #include "nav_msgs/msg/path.hpp"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include "plansys2_msgs/msg/action_cost.hpp"
 
 namespace plansys2_actions_cost
 {
-ActionCostPtr compute_path_length(const nav_msgs::msg::Path::SharedPtr & path_ptr);
-CUSTOM_PLUGIN_GENERATOR(PathLength, &compute_path_length, const nav_msgs::msg::Path::SharedPtr &)
+ActionCostPtr compute_path_smoothness(const nav_msgs::msg::Path::SharedPtr & path_ptr);
+CUSTOM_PLUGIN_GENERATOR(
+  PathSmoothness, &compute_path_smoothness,
+  const nav_msgs::msg::Path::SharedPtr &)
 }  // namespace plansys2_actions_cost
 
-#endif  // PLANSYS2_ACTIONS_COST__PATH_LENGTH_HPP_
+#endif  // PLANSYS2_ACTIONS_COST__COST_FUNCTIONS__PATH_SMOOTHNESS_HPP_

@@ -14,9 +14,9 @@
 
 #include <gtest/gtest.h>
 
-#include "plansys2_actions_cost/path_length.hpp"
-#include "plansys2_actions_cost/path_smoothness.hpp"
-#include "plansys2_actions_cost/path_cost.hpp"
+#include "plansys2_actions_cost/cost_functions/path_length.hpp"
+#include "plansys2_actions_cost/cost_functions/path_smoothness.hpp"
+#include "plansys2_actions_cost/cost_functions/path_cost.hpp"
 
 #include "nav2_costmap_2d/costmap_2d_publisher.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
