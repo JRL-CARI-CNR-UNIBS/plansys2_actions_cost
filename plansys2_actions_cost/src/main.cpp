@@ -17,7 +17,7 @@
 #include "plansys2_actions_cost/cost_functions/path_length.hpp"
 #include "plansys2_actions_cost/cost_functions/path_smoothness.hpp"
 #include "plansys2_actions_cost/cost_functions/path_cost.hpp"
-
+#include "plansys2_actions_cost/move_action_cost_base.hpp"
 
 #include "plansys2_msgs/msg/action_cost.hpp"
 #include "nav_msgs/msg/path.hpp"
