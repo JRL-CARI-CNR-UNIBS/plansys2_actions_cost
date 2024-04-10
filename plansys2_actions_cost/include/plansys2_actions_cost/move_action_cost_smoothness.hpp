@@ -12,34 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_ACTIONS_COST__MOVE_ACTION_COST_LENGTH_HPP_
-#define PLANSYS2_ACTIONS_COST__MOVE_ACTION_COST_LENGTH_HPP_
+#ifndef PLANSYS2_ACTIONS_COST__MOVE_ACTION_COST_SMOOTHNESS_HPP_
+#define PLANSYS2_ACTIONS_COST__MOVE_ACTION_COST_SMOOTHNESS_HPP_
 
 #include <utility>
 #include <functional>
 
 #include "plansys2_msgs/msg/action_cost.hpp"
-#include "plansys2_actions_cost/cost_functions/path_length.hpp"
+#include "plansys2_actions_cost/cost_functions/path_smoothness.hpp"
 #include "plansys2_actions_cost/move_action_cost_base.hpp"
 
 namespace plansys2_actions_cost
 {
 
-class MoveActionCostLength : public MoveActionCostBase
+class MoveActionCostSmoothness : public MoveActionCostBase
 {
 public:
-    MoveActionCostLength() {}
-    ~MoveActionCostLength() {}
+    MoveActionCostSmoothness() {}
+    ~MoveActionCostSmoothness() {}
 
 protected:
-    PathLength path_length;
+    PathSmoothness path_smoothness;
     inline ActionCostPtr compute_cost_function() override
     {
-        auto cost_function = path_length.args_binder(std::ref(path_ptr_));
+        auto cost_function = path_smoothness.args_binder(std::ref(path_ptr_));
         return cost_function();
     }
 };
 
 }  // namespace plansys2_actions_cost
 
-#endif  // PLANSYS2_ACTIONS_COST__MOVE_ACTION_COST_LENGTH_HPP_
+#endif  // PLANSYS2_ACTIONS_COST__MOVE_ACTION_COST_SMOOTHNESS_HPP_

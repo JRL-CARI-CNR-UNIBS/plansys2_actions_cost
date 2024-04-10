@@ -36,13 +36,14 @@ public:
 
   virtual void initialize(const plansys2::ActionExecutorClient::Ptr & action_executor_client)
   {
-    action_executor_client_ptr_ = action_executor_client;
+    action_executor_client_ = action_executor_client;
   }
   // template<typename... Args>
   // void initialize(Args&&... args)
   // {throw std::runtime_error("The type is not implemented. Aborted");};
 
-  virtual void compute_action_cost(const T & goal)
+  virtual void compute_action_cost(const T & goal, 
+                                   const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
   {
     throw std::runtime_error("The type is not implemented. Aborted");
   }
@@ -51,7 +52,9 @@ public:
 
 protected:
   ActionCostPtr action_cost_ptr;
-  plansys2::ActionExecutorClient::Ptr action_executor_client_ptr_;
+  plansys2::ActionExecutorClient::Ptr action_executor_client_;
+  
+  virtual ActionCostPtr compute_cost_function() = 0;
 };
 
 }  // namespace plansys2_actions_cost

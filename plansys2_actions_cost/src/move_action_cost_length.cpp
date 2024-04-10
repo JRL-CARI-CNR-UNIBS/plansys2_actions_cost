@@ -11,16 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+/*
 #include "plansys2_actions_cost/cost_functions/path_length.hpp"
 
 namespace plansys2_actions_cost
 {
-
-void MoveActionCostLength::compute_action_cost(const geometry_msgs::msg::PoseStamped & goal)
-{
-  // TODO(samuele): Action Server call
-}
 
 ActionCostPtr MoveActionCostLength::compute_cost_function()
 {
@@ -29,3 +24,4 @@ ActionCostPtr MoveActionCostLength::compute_cost_function()
 }
 
 }  // namespace plansys2_actions_cost
+*/
