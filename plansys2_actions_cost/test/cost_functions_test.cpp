@@ -292,9 +292,9 @@ TEST(MoveActionCostTest, MoveActionCostTestLength)
   // rclcpp::spin_some();
   std::cerr << "Publishing and calling move_action_cost" << std::endl;
   RCLCPP_DEBUG(test_node->get_logger(), "Publishing and calling move_action_cost");
-  move_action_cost->compute_action_cost(goal_pose, nullptr);
-  
-  std::cerr << "After pub and calling move_action_cost" << std::endl;
+  auto action_cost = move_action_cost->compute_action_cost(goal_pose);
+  std::cerr << "Action cost: " << action_cost->nominal_cost << std::endl;
+  // std::cerr << "After pub and calling move_action_cost" << std::endl;
     
   auto start = test_node->now();
   auto rate = rclcpp::Rate(1);
