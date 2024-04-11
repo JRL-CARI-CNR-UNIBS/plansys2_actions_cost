@@ -33,9 +33,10 @@ public:
     MoveActionCostBase() {};
     ~MoveActionCostBase() {};
 
-    void initialize(const rclcpp_lifecycle::LifecycleNode::SharedPtr & node) override;
+    void initialize(const plansys2::ActionExecutorClient::Ptr & action_executor_client) override;
 
-    virtual ActionCostPtr compute_action_cost(const geometry_msgs::msg::PoseStamped & goal);
+    virtual void compute_action_cost(const geometry_msgs::msg::PoseStamped & goal, 
+                                    const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
 
     virtual void update_action_cost(){};
 
@@ -52,9 +53,6 @@ protected:
 
     virtual ActionCostPtr compute_cost_function() = 0;
 private:
-    rclcpp::CallbackGroup::SharedPtr callback_group_;
-    rclcpp::executors::SingleThreadedExecutor callback_group_executor_;
-
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pos_sub_;
     rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
     geometry_msgs::msg::PoseStamped current_pos_;

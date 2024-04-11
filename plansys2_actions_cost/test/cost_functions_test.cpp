@@ -263,12 +263,27 @@ TEST(MoveActionCostTest, MoveActionCostTestLength)
 {
   using namespace std::chrono_literals;
   auto test_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+  auto action_executor_client = plansys2::ActionExecutorClient::make_shared("fake_action_executor_client", std::chrono::milliseconds(100));
+  action_executor_client->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  action_executor_client->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+
   auto compute_path_action_node = std::make_shared<ComputePathToPoseActionServer>();
   auto start_conf_pub = test_node->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "/amcl_pose", 10);
-
+  bool received_message = false; 
+  auto action_result_sub = test_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
+    "/actions_hub", 10, [&](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
+      std::cerr << "Action result received" << std::endl;
+      ASSERT_EQ(msg->action, "move");
+      received_message = true;
+    });
+  auto msg_test = std::make_shared<plansys2_msgs::msg::ActionExecution>();
+  msg_test->action = "move";
   auto move_action_cost = std::make_shared<plansys2_actions_cost::MoveActionCostLength>();
-  move_action_cost->initialize(test_node);
+  std::cerr << "Ide: " << action_executor_client.get() << std::endl;
+  move_action_cost->initialize(action_executor_client);
+  std::cerr << "Ide: " << action_executor_client.get() << std::endl;
 
   // // Start pose
   geometry_msgs::msg::PoseWithCovarianceStamped start_pose = geometry_msgs::msg::PoseWithCovarianceStamped();
@@ -286,24 +301,28 @@ TEST(MoveActionCostTest, MoveActionCostTestLength)
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
   exe.add_node(test_node->get_node_base_interface());
   exe.add_node(compute_path_action_node->get_node_base_interface());
+  exe.add_node(action_executor_client->get_node_base_interface());
 
   // while(rclcpp::ok()){
   start_conf_pub->publish(start_pose);
   // rclcpp::spin_some();
   std::cerr << "Publishing and calling move_action_cost" << std::endl;
   RCLCPP_DEBUG(test_node->get_logger(), "Publishing and calling move_action_cost");
-  auto action_cost = move_action_cost->compute_action_cost(goal_pose);
-  std::cerr << "Action cost: " << action_cost->nominal_cost << std::endl;
-  // std::cerr << "After pub and calling move_action_cost" << std::endl;
+  move_action_cost->compute_action_cost(goal_pose, msg_test);
+  
+  std::cerr << "After pub and calling move_action_cost" << std::endl;
     
   auto start = test_node->now();
   auto rate = rclcpp::Rate(1);
   while (rclcpp::ok() && (test_node->now() - start) < 10s)  {
     exe.spin_some();
+    // if (received_message) {
+    //   break;
+    // }
     rate.sleep();
   }
-  // }
-  ASSERT_EQ(1,1);
+  ASSERT_TRUE(received_message);
+
 }
 
 int main(int argc, char ** argv)

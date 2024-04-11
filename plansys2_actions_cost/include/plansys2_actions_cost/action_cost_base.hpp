@@ -33,16 +33,17 @@ public:
 
   virtual ~ActionCostBase() {}
 
-  virtual void initialize(const rclcpp_lifecycle::LifecycleNode::SharedPtr & node)
+  virtual void initialize(const plansys2::ActionExecutorClient::Ptr & action_executor_client)
   {
     std::cerr << "Initialize action cost base" << std::endl;
-    node_ = node;
+    action_executor_client_ = action_executor_client;
   }
   // template<typename... Args>
   // void initialize(Args&&... args)
   // {throw std::runtime_error("The type is not implemented. Aborted");};
 
-  virtual ActionCostPtr compute_action_cost(const T & goal)
+  virtual void compute_action_cost(const T & goal, 
+                                   const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
   {
     throw std::runtime_error("The type is not implemented. Aborted");
   }
@@ -50,7 +51,7 @@ public:
   virtual void update_action_cost() = 0;
 
 protected:
-  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  plansys2::ActionExecutorClient::Ptr action_executor_client_ = nullptr;
   ActionCostPtr action_cost_ptr_ = nullptr;
   
   virtual ActionCostPtr compute_cost_function() = 0;
