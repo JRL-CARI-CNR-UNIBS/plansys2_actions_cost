@@ -34,9 +34,10 @@ public:
 
   virtual ~ActionCostBase() {}
 
-  virtual void initialize(const plansys2::ActionExecutorClient::Ptr & action_executor_client)
+  virtual void initialize(const rclcpp_lifecycle::LifecycleNode::SharedPtr & node)
   {
-    action_executor_client_ = action_executor_client;
+    std::cerr << "Initialize action cost base" << std::endl;
+    node_ = node;
   }
   // template<typename... Args>
   // void initialize(Args&&... args)
@@ -51,8 +52,8 @@ public:
   virtual void update_action_cost() = 0;
 
 protected:
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
   ActionCostPtr action_cost_ptr;
-  plansys2::ActionExecutorClient::Ptr action_executor_client_;
   
   virtual ActionCostPtr compute_cost_function() = 0;
 };

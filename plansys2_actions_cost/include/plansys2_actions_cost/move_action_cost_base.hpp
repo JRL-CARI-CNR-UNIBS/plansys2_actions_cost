@@ -33,7 +33,7 @@ public:
     MoveActionCostBase() {};
     ~MoveActionCostBase() {};
 
-    void initialize(const plansys2::ActionExecutorClient::Ptr & action_executor_client) override;
+    void initialize(const rclcpp_lifecycle::LifecycleNode::SharedPtr & node) override;
 
     virtual void compute_action_cost(const geometry_msgs::msg::PoseStamped & goal, 
                                     const plansys2_msgs::msg::ActionExecution::SharedPtr msg);

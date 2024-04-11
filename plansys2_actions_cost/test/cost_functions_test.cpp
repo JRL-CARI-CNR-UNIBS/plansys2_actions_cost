@@ -18,8 +18,13 @@
 #include "plansys2_actions_cost/cost_functions/path_smoothness.hpp"
 #include "plansys2_actions_cost/cost_functions/path_cost.hpp"
 
+#include "plansys2_actions_cost/move_action_cost_length.hpp"
+
 #include "nav2_costmap_2d/costmap_2d_publisher.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+
+#include "nav2_msgs/action/compute_path_to_pose.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
 
 // Test case for path_length
 TEST(CostFunctionTest, PathLengthTest)
@@ -176,6 +181,130 @@ TEST(CostFunctionTest, PathCostTest)
     1e-5);
 }
 
+class ComputePathToPoseActionServer : public rclcpp::Node
+{
+public:
+  using ComputePathToPose = nav2_msgs::action::ComputePathToPose;
+  using GoalHandleComputePathToPose = rclcpp_action::ServerGoalHandle<ComputePathToPose>;
+
+  explicit ComputePathToPoseActionServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
+  : Node("compute_path_to_pose", options)
+  {
+    std::cerr << "Creating action server" << std::endl;
+    using namespace std::placeholders;
+
+    this->action_server_ = rclcpp_action::create_server<ComputePathToPose>(
+      this,
+      "/compute_path_to_pose",
+      std::bind(&ComputePathToPoseActionServer::handle_goal, this, _1, _2),
+      std::bind(&ComputePathToPoseActionServer::handle_cancel, this, _1),
+      std::bind(&ComputePathToPoseActionServer::handle_accepted, this, _1));
+  }
+
+private:
+  rclcpp_action::Server<ComputePathToPose>::SharedPtr action_server_;
+
+  rclcpp_action::GoalResponse handle_goal(
+    const rclcpp_action::GoalUUID & uuid,
+    std::shared_ptr<const ComputePathToPose::Goal> goal)
+  {
+    RCLCPP_INFO(this->get_logger(), "Received goal request");
+    std::cerr << "Received goal request" << std::endl;
+    (void)uuid;
+    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  }
+
+  rclcpp_action::CancelResponse handle_cancel(
+    const std::shared_ptr<GoalHandleComputePathToPose> goal_handle)
+  {
+    RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
+    std::cerr << "Received request to cancel goal" << std::endl;
+    (void)goal_handle;
+    return rclcpp_action::CancelResponse::ACCEPT;
+  }
+
+  void handle_accepted(const std::shared_ptr<GoalHandleComputePathToPose> goal_handle)
+  {
+    std::cerr << "Handle accepted" << std::endl;
+    using namespace std::placeholders;
+    
+    // this needs to return quickly to avoid blocking the executor, so spin up a new thread
+    std::thread{std::bind(&ComputePathToPoseActionServer::execute, this, _1), goal_handle}.detach();
+  }
+
+  void execute(const std::shared_ptr<GoalHandleComputePathToPose> goal_handle)
+  {
+    RCLCPP_INFO(this->get_logger(), "Received goal request");
+    std::cerr << "Received goal request" << std::endl;
+    const auto goal = goal_handle->get_goal();
+
+    auto result = std::make_shared<ComputePathToPose::Result>();
+    result->path = generate_path(goal->start, goal->goal); // Generate a path from start to goal
+    goal_handle->succeed(result);
+    std::cerr << "Succeeding goal" << std::endl;
+    return;
+  }
+  nav_msgs::msg::Path generate_path(const geometry_msgs::msg::PoseStamped &start, const geometry_msgs::msg::PoseStamped &goal)
+  {
+      nav_msgs::msg::Path path;
+      path.header.stamp = this->now();
+      path.header.frame_id = "map"; // Assuming the path is in the map frame
+
+      // Simply add the start and goal poses to the path
+      path.poses.push_back(start);
+      path.poses.push_back(goal);
+
+      return path;
+  }
+
+};  // class 
+
+TEST(MoveActionCostTest, MoveActionCostTestLength)
+{
+  using namespace std::chrono_literals;
+  auto test_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+  auto compute_path_action_node = std::make_shared<ComputePathToPoseActionServer>();
+  auto start_conf_pub = test_node->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
+    "/amcl_pose", 10);
+
+  auto move_action_cost = std::make_shared<plansys2_actions_cost::MoveActionCostLength>();
+  move_action_cost->initialize(test_node);
+
+  // // Start pose
+  geometry_msgs::msg::PoseWithCovarianceStamped start_pose = geometry_msgs::msg::PoseWithCovarianceStamped();
+  start_pose.pose.pose.position.x = 0.0;
+  start_pose.pose.pose.position.y = 0.0;
+
+  // // Goal pose
+  geometry_msgs::msg::PoseStamped goal_pose = geometry_msgs::msg::PoseStamped();
+  goal_pose.pose.position.x = 1.0;
+  goal_pose.pose.position.y = 1.0;
+
+  test_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  test_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+  exe.add_node(test_node->get_node_base_interface());
+  exe.add_node(compute_path_action_node->get_node_base_interface());
+
+  // while(rclcpp::ok()){
+  start_conf_pub->publish(start_pose);
+  // rclcpp::spin_some();
+  std::cerr << "Publishing and calling move_action_cost" << std::endl;
+  RCLCPP_DEBUG(test_node->get_logger(), "Publishing and calling move_action_cost");
+  move_action_cost->compute_action_cost(goal_pose, nullptr);
+  
+  std::cerr << "After pub and calling move_action_cost" << std::endl;
+    
+  auto start = test_node->now();
+  auto rate = rclcpp::Rate(1);
+  while (rclcpp::ok() && (test_node->now() - start) < 10s)  {
+    exe.spin_some();
+    rate.sleep();
+  }
+  // }
+  ASSERT_EQ(1,1);
+}
 
 int main(int argc, char ** argv)
 {

@@ -18,29 +18,30 @@ namespace plansys2_actions_cost
 {
 
 void MoveActionCostBase::initialize(
-  const plansys2::ActionExecutorClient::Ptr & action_executor_client)
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr & node)
 {
-    action_executor_client_ = action_executor_client;
+    std::cerr << "Initialize action cost base" << std::endl;
+    node_ = node;
 
     compute_path_action_client_ =
         rclcpp_action::create_client<nav2_msgs::action::ComputePathToPose>(
-        action_executor_client_->shared_from_this(),
-        "compute_path_to_pose");
+        node_->shared_from_this(),
+        "/compute_path_to_pose");
 
-    RCLCPP_INFO(action_executor_client_->get_logger(), "Waiting for compute path action server...");
+    RCLCPP_INFO(node_->get_logger(), "Waiting for compute path action server...");
 
     bool is_action_server_ready =
         compute_path_action_client_->wait_for_action_server(std::chrono::seconds(5));
 
     if (is_action_server_ready) {
-        RCLCPP_INFO(action_executor_client_->get_logger(), "Compute path action server ready");
+        RCLCPP_INFO(node_->get_logger(), "Compute path action server ready");
     } else {
-        RCLCPP_ERROR(
-        action_executor_client_->get_logger(), "Failed to connect to compute path action server");
+        RCLCPP_DEBUG(
+        node_->get_logger(), "Failed to connect to compute path action server");
     }
 
-    path_pub_ = action_executor_client_->create_publisher<nav_msgs::msg::Path>("computed_path", 10);
-    pos_sub_ = action_executor_client_->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+    path_pub_ = node_->create_publisher<nav_msgs::msg::Path>("/computed_path", 10);
+    pos_sub_ = node_->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "/amcl_pose",
         10,
         std::bind(&MoveActionCostBase::current_pos_callback, this, std::placeholders::_1));
@@ -49,6 +50,7 @@ void MoveActionCostBase::initialize(
 void MoveActionCostBase::compute_action_cost(const geometry_msgs::msg::PoseStamped & goal, 
                                              const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
 {
+    std::cerr << "Compute action cost" << std::endl;
     auto send_goal_options = 
         rclcpp_action::Client<nav2_msgs::action::ComputePathToPose>::SendGoalOptions();
 
@@ -57,18 +59,19 @@ void MoveActionCostBase::compute_action_cost(const geometry_msgs::msg::PoseStamp
         ComputePathGoalHandle::SharedPtr goal_handle,
         ComputePathFeedback feedback)
         {
-            RCLCPP_INFO(
-                action_executor_client_->get_logger(),
+            RCLCPP_DEBUG(
+                node_->get_logger(),
                 "Feedback received from action cost computation (I am computing)");
         };
     // Result callbkack -> Path
     send_goal_options.result_callback = [this, msg](ComputePathResult & result)
     {
+        std::cerr << "Result callback" << std::endl;
         ActionCostPtr action_cost = std::make_shared<plansys2_msgs::msg::ActionCost>();
 
         if (result.code != rclcpp_action::ResultCode::SUCCEEDED) {
-            RCLCPP_INFO(
-            action_executor_client_->get_logger(), "Compute path to cost. Goal failed with error code %d",
+            RCLCPP_DEBUG(
+            node_->get_logger(), "Compute path to cost. Goal failed with error code %d",
             static_cast<int>(result.code));
 
             action_cost->nominal_cost = std::numeric_limits<double>::infinity();
@@ -81,7 +84,9 @@ void MoveActionCostBase::compute_action_cost(const geometry_msgs::msg::PoseStamp
         auto path = result.result->path;
         path_ptr_ = std::make_shared<nav_msgs::msg::Path>(path);
         action_cost = this->compute_cost_function();
-
+        RCLCPP_DEBUG(
+            node_->get_logger(), "Computed path cost: %f", action_cost->nominal_cost);
+        std::cerr << "Computed path cost: " << action_cost->nominal_cost << std::endl;
         // action_executor_client_->set_action_cost(action_cost);
         // action_executor_client_->send_response(msg);
 
@@ -92,7 +97,7 @@ void MoveActionCostBase::compute_action_cost(const geometry_msgs::msg::PoseStamp
         [this, msg](const ComputePathGoalHandle::SharedPtr & goal_handle)
         {
             if (!goal_handle) {
-                RCLCPP_ERROR(action_executor_client_->get_logger(), "Goal was rejected by server");
+                RCLCPP_DEBUG(node_->get_logger(), "Goal was rejected by server");
 
                 ActionCostPtr action_cost = std::make_shared<plansys2_msgs::msg::ActionCost>();
                 action_cost->nominal_cost = std::numeric_limits<double>::infinity();
@@ -100,15 +105,23 @@ void MoveActionCostBase::compute_action_cost(const geometry_msgs::msg::PoseStamp
                 // action_executor_client_->set_action_cost(action_cost);
                 // action_executor_client_->send_response(msg);
             } else {
-                RCLCPP_INFO(
-                action_executor_client_->get_logger(), "Goal accepted by server, waiting for result");
+                RCLCPP_DEBUG(
+                node_->get_logger(), "Goal accepted by server, waiting for result");
             }
 
         };
     nav2_msgs::action::ComputePathToPose::Goal path_to_pose_goal = nav2_msgs::action::ComputePathToPose::Goal();
+    // TODO(samuele): Retrieve this as a parameter in initialize method
+    path_to_pose_goal.planner_id = "GridBased";
+    path_to_pose_goal.start.header.frame_id = "map";
     path_to_pose_goal.start = current_pos_;
+    std::cerr << "Start pose: " << current_pos_.pose.position.x << " " << current_pos_.pose.position.y << std::endl;
     path_to_pose_goal.goal = goal;
+    std::cerr << "Goal pose: " << goal.pose.position.x << " " << goal.pose.position.y << std::endl;
+    std::cerr << "pre send" << std::endl;
+
     auto future_goal_handle = compute_path_action_client_->async_send_goal(path_to_pose_goal, send_goal_options);
+    std::cerr << "post send" << std::endl;
     // future_goal_handle->wait();
 }
 
