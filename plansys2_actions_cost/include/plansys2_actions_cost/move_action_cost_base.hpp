@@ -39,7 +39,7 @@ public:
                                     const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
 
     virtual void update_action_cost(){};
-
+    geometry_msgs::msg::PoseStamped get_current_pose() {return current_pose_;};
 protected:
     using ComputePathGoalHandle =
         rclcpp_action::ClientGoalHandle<nav2_msgs::action::ComputePathToPose>;
@@ -53,11 +53,12 @@ protected:
 
     virtual ActionCostPtr compute_cost_function() = 0;
 private:
-    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pos_sub_;
+    std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>> pose_sub_;
     rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
-    geometry_msgs::msg::PoseStamped current_pos_;
+    geometry_msgs::msg::PoseStamped current_pose_;
 
-    void current_pos_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
+    void current_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
+
 };
 }  // namespace plansys2_actions_cost
 

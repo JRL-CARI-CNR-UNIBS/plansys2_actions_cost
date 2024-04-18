@@ -42,8 +42,7 @@ public:
   // void initialize(Args&&... args)
   // {throw std::runtime_error("The type is not implemented. Aborted");};
 
-  virtual void compute_action_cost(const T & goal, 
-                                   const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
+  virtual ActionCostPtr compute_action_cost(const T & goal)
   {
     throw std::runtime_error("The type is not implemented. Aborted");
   }

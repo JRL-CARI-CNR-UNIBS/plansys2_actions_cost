@@ -5,6 +5,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# set(CMAKE_BUILD_TYPE Debug)
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -47,6 +49,8 @@ target_link_libraries(cost_test ${PROJECT_NAME})
 install(DIRECTORY include/
   DESTINATION include/
 )
+
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS
   ${PROJECT_NAME}
