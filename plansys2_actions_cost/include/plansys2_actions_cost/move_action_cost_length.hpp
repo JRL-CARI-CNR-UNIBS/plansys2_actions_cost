@@ -43,3 +43,8 @@ protected:
 }  // namespace plansys2_actions_cost
 
 #endif  // PLANSYS2_ACTIONS_COST__MOVE_ACTION_COST_LENGTH_HPP_
+
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(
+  plansys2_actions_cost::MoveActionCostLength,
+  plansys2_actions_cost::MoveActionCostBase)

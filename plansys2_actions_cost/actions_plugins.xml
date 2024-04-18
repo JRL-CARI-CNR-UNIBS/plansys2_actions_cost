@@ -1,0 +1,8 @@
+<library path="plansys2_actions_cost">
+  <class type="plansys2_actions_cost::MoveActionCostLength" base_class_type="plansys2_actions_cost::MoveActionCostBase">
+    <description>This is a plugin for Action Move and cost Lenght</description>
+  </class>
+  <class type="plansys2_actions_cost::MoveActionCostSmoothness" base_class_type="plansys2_actions_cost::MoveActionCostBase">
+    <description>This is a plugin for Action Move and cost Smoothness</description>
+  </class>
+</library>

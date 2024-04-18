@@ -18,12 +18,15 @@
 #include "plansys2_actions_cost/cost_functions/path_smoothness.hpp"
 #include "plansys2_actions_cost/cost_functions/path_cost.hpp"
 #include "plansys2_actions_cost/move_action_cost_base.hpp"
-#include "plansys2_actions_cost/move_action_cost_smoothness.hpp"
+// #include "plansys2_actions_cost/move_action_cost_smoothness.hpp"
 
 #include "plansys2_msgs/msg/action_cost.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "nav2_costmap_2d/costmap_2d_publisher.hpp"
 #include "rclcpp/rclcpp.hpp"
+
+#include <pluginlib/class_loader.hpp>
+
 
 plansys2_msgs::msg::ActionCost::SharedPtr generic_function_that_uses_the_cost_function(
   plansys2_actions_cost::cost_function_t cost_function)
@@ -121,6 +124,20 @@ private:
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
+
+
+  pluginlib::ClassLoader<plansys2_actions_cost::MoveActionCostBase> move_action_cost_loader(
+    "plansys2_actions_cost", "plansys2_actions_cost::MoveActionCostBase");
+  std::shared_ptr<plansys2_actions_cost::MoveActionCostBase> move_action_cost;
+  try {
+    move_action_cost =
+      move_action_cost_loader.createSharedInstance(
+      "plansys2_actions_cost::MoveActionCostSmoothness");
+    std::cerr << "MoveActionCostSmoothness created" << std::endl;
+  } catch (pluginlib::PluginlibException & ex) {
+    printf("The plugin failed to load for some reason. Error: %s\n", ex.what());
+  }
+
   /*
   nav_msgs::msg::Path::SharedPtr test_path_ptr(new nav_msgs::msg::Path);
   test_path_ptr->poses.resize(2);
@@ -204,7 +221,7 @@ int main(int argc, char ** argv)
     });
   auto msg_test = std::make_shared<plansys2_msgs::msg::ActionExecution>();
   msg_test->action = "move";
-  auto move_action_cost = std::make_shared<plansys2_actions_cost::MoveActionCostSmoothness>();
+  // auto move_action_cost = std::make_shared<plansys2_actions_cost::MoveActionCostSmoothness>();
   std::cerr << "Ide: " << action_executor_client.get() << std::endl;
   move_action_cost->initialize(action_executor_client);
   std::cerr << "Ide: " << action_executor_client.get() << std::endl;
