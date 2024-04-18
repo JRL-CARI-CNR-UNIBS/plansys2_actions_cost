@@ -52,7 +52,7 @@ public:
 protected:
   plansys2::ActionExecutorClient::Ptr action_executor_client_ = nullptr;
   ActionCostPtr action_cost_ptr_ = nullptr;
-  
+
   virtual ActionCostPtr compute_cost_function() = 0;
 };
 

@@ -28,16 +28,16 @@ namespace plansys2_actions_cost
 class MoveActionCostLength : public MoveActionCostBase
 {
 public:
-    MoveActionCostLength() {}
-    ~MoveActionCostLength() {}
+  MoveActionCostLength() {}
+  ~MoveActionCostLength() {}
 
 protected:
-    PathLength path_length;
-    inline ActionCostPtr compute_cost_function() override
-    {
-        auto cost_function = path_length.args_binder(std::ref(path_ptr_));
-        return cost_function();
-    }
+  PathLength path_length;
+  inline ActionCostPtr compute_cost_function() override
+  {
+    auto cost_function = path_length.args_binder(std::ref(path_ptr_));
+    return cost_function();
+  }
 };
 
 }  // namespace plansys2_actions_cost

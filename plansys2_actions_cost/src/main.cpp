@@ -37,7 +37,9 @@ public:
   using ComputePathToPose = nav2_msgs::action::ComputePathToPose;
   using GoalHandleComputePathToPose = rclcpp_action::ServerGoalHandle<ComputePathToPose>;
 
-  explicit ComputePathToPoseActionServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
+  explicit ComputePathToPoseActionServer(
+    const
+    rclcpp::NodeOptions & options = rclcpp::NodeOptions())
   : Node("compute_path_to_pose", options)
   {
     std::cerr << "Creating action server" << std::endl;
@@ -77,7 +79,7 @@ private:
   {
     std::cerr << "Handle accepted" << std::endl;
     using namespace std::placeholders;
-    
+
     // this needs to return quickly to avoid blocking the executor, so spin up a new thread
     std::thread{std::bind(&ComputePathToPoseActionServer::execute, this, _1), goal_handle}.detach();
   }
@@ -89,28 +91,31 @@ private:
     const auto goal = goal_handle->get_goal();
 
     auto result = std::make_shared<ComputePathToPose::Result>();
-    result->path = generate_path(goal->start, goal->goal); // Generate a path from start to goal
+    result->path = generate_path(goal->start, goal->goal);  // Generate a path from start to goal
     goal_handle->succeed(result);
-    //Print path points
-    std::cerr << "Start: " << goal->start.pose.position.x << " " << goal->start.pose.position.y << std::endl;
-    std::cerr << "Goal: " << goal->goal.pose.position.x << " " << goal->goal.pose.position.y << std::endl;
+    // Print path points
+    std::cerr << "Start: " << goal->start.pose.position.x << " " << goal->start.pose.position.y <<
+      std::endl;
+    std::cerr << "Goal: " << goal->goal.pose.position.x << " " << goal->goal.pose.position.y <<
+      std::endl;
     std::cerr << "Succeeding goal" << std::endl;
     return;
   }
-  nav_msgs::msg::Path generate_path(const geometry_msgs::msg::PoseStamped &start, const geometry_msgs::msg::PoseStamped &goal)
+  nav_msgs::msg::Path generate_path(
+    const geometry_msgs::msg::PoseStamped & start,
+    const geometry_msgs::msg::PoseStamped & goal)
   {
-      nav_msgs::msg::Path path;
-      path.header.stamp = this->now();
-      path.header.frame_id = "map"; // Assuming the path is in the map frame
+    nav_msgs::msg::Path path;
+    path.header.stamp = this->now();
+    path.header.frame_id = "map";   // Assuming the path is in the map frame
 
-      // Simply add the start and goal poses to the path
-      path.poses.push_back(start);
-      path.poses.push_back(goal);
+    // Simply add the start and goal poses to the path
+    path.poses.push_back(start);
+    path.poses.push_back(goal);
 
-      return path;
+    return path;
   }
-
-};  // class 
+};  // class
 
 
 int main(int argc, char ** argv)
@@ -182,19 +187,19 @@ int main(int argc, char ** argv)
 
   using namespace std::chrono_literals;
   auto test_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node_n");
-  auto action_executor_client = plansys2::ActionExecutorClient::make_shared("fake_action_executor_client", std::chrono::milliseconds(100));
+  auto action_executor_client = plansys2::ActionExecutorClient::make_shared(
+    "fake_action_executor_client", std::chrono::milliseconds(100));
   // rclcpp::spin(action_executor_client->get_node_base_interface());
   action_executor_client->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   // action_executor_client->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  
+
   auto compute_path_action_node = std::make_shared<ComputePathToPoseActionServer>();
   auto start_conf_pub = test_node->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "/amcl_pose", 10);
-  bool received_message = false; 
+  bool received_message = false;
   auto action_result_sub = test_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", 10, [&](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
       std::cerr << "Action result received" << std::endl;
-      // ASSERT_EQ(msg->action, "move");
       received_message = true;
     });
   auto msg_test = std::make_shared<plansys2_msgs::msg::ActionExecution>();
@@ -204,12 +209,13 @@ int main(int argc, char ** argv)
   move_action_cost->initialize(action_executor_client);
   std::cerr << "Ide: " << action_executor_client.get() << std::endl;
 
-  // // Start pose
-  geometry_msgs::msg::PoseWithCovarianceStamped start_pose = geometry_msgs::msg::PoseWithCovarianceStamped();
+  // Start pose
+  geometry_msgs::msg::PoseWithCovarianceStamped start_pose =
+    geometry_msgs::msg::PoseWithCovarianceStamped();
   start_pose.pose.pose.position.x = 1.0;
   start_pose.pose.pose.position.y = 0.0;
 
-  // // Goal pose
+  // Goal pose
   geometry_msgs::msg::PoseStamped goal_pose = geometry_msgs::msg::PoseStamped();
   goal_pose.pose.position.x = 1.0;
   goal_pose.pose.position.y = 1.0;
@@ -217,35 +223,11 @@ int main(int argc, char ** argv)
   test_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   test_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp::executors::MultiThreadedExecutor exe; // exe(rclcpp::ExecutorOptions(),3);
+  rclcpp::executors::MultiThreadedExecutor exe;  // exe(rclcpp::ExecutorOptions(),3);
   exe.add_node(test_node->get_node_base_interface());
   exe.add_node(action_executor_client->get_node_base_interface());
   exe.add_node(compute_path_action_node->get_node_base_interface());
   exe.spin();
 
-  /*
-  exe.add_node(compute_path_action_node->get_node_base_interface());
-  // exe.add_node(action_executor_client->get_node_base_interface());
-
-  // while(rclcpp::ok()){
-  start_conf_pub->publish(start_pose);
-  // rclcpp::spin_some();
-  std::cerr << "Publishing and calling move_action_cost" << std::endl;
-  RCLCPP_DEBUG(test_node->get_logger(), "Publishing and calling move_action_cost");
-  // move_action_cost->compute_action_cost(goal_pose, msg_test);
-  
-  std::cerr << "After pub and calling move_action_cost" << std::endl;
-  
-  auto start = test_node->now();
-  auto rate = rclcpp::Rate(1);
-  rclcpp::spin(action_executor_client->get_node_base_interface());
-  // while (rclcpp::ok() && (test_node->now() - start) < 10s)  {
-  //   exe.spin_some();
-  //   // if (received_message) {
-  //   //   break;
-  //   // }
-  //   rate.sleep();
-  // }
-*/
   return 0;
 }

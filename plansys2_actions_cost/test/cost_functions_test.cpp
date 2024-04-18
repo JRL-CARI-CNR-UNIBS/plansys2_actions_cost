@@ -188,7 +188,9 @@ public:
   using ComputePathToPose = nav2_msgs::action::ComputePathToPose;
   using GoalHandleComputePathToPose = rclcpp_action::ServerGoalHandle<ComputePathToPose>;
 
-  explicit ComputePathToPoseActionServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
+  explicit ComputePathToPoseActionServer(
+    const
+    rclcpp::NodeOptions & options = rclcpp::NodeOptions())
   : Node("compute_path_to_pose", options)
   {
     std::cerr << "Creating action server" << std::endl;
@@ -228,7 +230,7 @@ private:
   {
     std::cerr << "Handle accepted" << std::endl;
     using namespace std::placeholders;
-    
+
     // this needs to return quickly to avoid blocking the executor, so spin up a new thread
     std::thread{std::bind(&ComputePathToPoseActionServer::execute, this, _1), goal_handle}.detach();
   }
@@ -240,36 +242,41 @@ private:
     const auto goal = goal_handle->get_goal();
 
     auto result = std::make_shared<ComputePathToPose::Result>();
-    result->path = generate_path(goal->start, goal->goal); // Generate a path from start to goal
+    result->path = generate_path(goal->start, goal->goal);  // Generate a path from start to goal
     goal_handle->succeed(result);
-    //Print path points
-    std::cerr << "Start: " << goal->start.pose.position.x << " " << goal->start.pose.position.y << std::endl;
-    std::cerr << "Goal: " << goal->goal.pose.position.x << " " << goal->goal.pose.position.y << std::endl;
+    // Print path points
+    std::cerr << "Start: " << goal->start.pose.position.x << " " << goal->start.pose.position.y <<
+      std::endl;
+    std::cerr << "Goal: " << goal->goal.pose.position.x << " " << goal->goal.pose.position.y <<
+      std::endl;
     std::cerr << "Succeeding goal" << std::endl;
     return;
   }
-  nav_msgs::msg::Path generate_path(const geometry_msgs::msg::PoseStamped &start, const geometry_msgs::msg::PoseStamped &goal)
+  nav_msgs::msg::Path generate_path(
+    const geometry_msgs::msg::PoseStamped & start,
+    const geometry_msgs::msg::PoseStamped & goal)
   {
-      nav_msgs::msg::Path path;
-      path.header.stamp = this->now();
-      path.header.frame_id = "map"; // Assuming the path is in the map frame
+    nav_msgs::msg::Path path;
+    path.header.stamp = this->now();
+    path.header.frame_id = "map";   // Assuming the path is in the map frame
 
-      // Simply add the start and goal poses to the path
-      path.poses.push_back(start);
-      path.poses.push_back(goal);
+    // Simply add the start and goal poses to the path
+    path.poses.push_back(start);
+    path.poses.push_back(goal);
 
-      return path;
+    return path;
   }
+};  // class
 
-};  // class 
-
-class TestNode : public ::testing::Test{
+class TestNode : public ::testing::Test
+{
 public:
   TestNode()
-  {    
+  {
     using std::placeholders::_1;
     node_ = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
-    action_executor_client_ = plansys2::ActionExecutorClient::make_shared("fake_action_executor_client", std::chrono::milliseconds(100));
+    action_executor_client_ = plansys2::ActionExecutorClient::make_shared(
+      "fake_action_executor_client", std::chrono::milliseconds(100));
     compute_path_action_server_ = std::make_shared<ComputePathToPoseActionServer>();
 
     start_conf_pub_ = node_->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
@@ -296,19 +303,21 @@ public:
     auto start = node_->now();
     auto rate = rclcpp::Rate(1);
     using namespace std::chrono_literals;
-    while (rclcpp::ok() && (node_->now() - start) < 10s)  {
+    while (rclcpp::ok() && (node_->now() - start) < 10s) {
       executor_.spin_some();
       rate.sleep();
     }
   }
-  void initialize_move_action_cost(const std::shared_ptr<plansys2_actions_cost::MoveActionCostBase> move_action_cost)
+  void initialize_move_action_cost(
+    const std::shared_ptr<plansys2_actions_cost::MoveActionCostBase> move_action_cost)
   {
     move_action_cost_ = move_action_cost;
     move_action_cost_->initialize(action_executor_client_);
   }
 
-  void call_action_cost(geometry_msgs::msg::PoseStamped goal_pose,
-                        plansys2_msgs::msg::ActionExecution::SharedPtr msg_test)
+  void call_action_cost(
+    geometry_msgs::msg::PoseStamped goal_pose,
+    plansys2_msgs::msg::ActionExecution::SharedPtr msg_test)
   {
     move_action_cost_->compute_action_cost(goal_pose, msg_test);
   }
@@ -316,13 +325,21 @@ public:
   {
     start_conf_pub_->publish(start_pose);
   }
-  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr get_publish_start_pose() {return start_conf_pub_;}
-  plansys2::ActionExecutorClient::Ptr get_action_executor_client() {return action_executor_client_;}
+  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
+  get_publish_start_pose()
+  {
+    return start_conf_pub_;
+  }
+  plansys2::ActionExecutorClient::Ptr get_action_executor_client()
+  {
+    return action_executor_client_;
+  }
   ~TestNode()
   {
     start_conf_pub_.reset();
   }
-  // void set_move_action_cost(const std::shared_ptr<plansys2_actions_cost::MoveActionCostBase> move_action_cost)
+  // void set_move_action_cost
+  // (const std::shared_ptr<plansys2_actions_cost::MoveActionCostBase> move_action_cost)
   // {
   //   move_action_cost_ = move_action_cost;
   //   move_action_cost_->initialize(action_executor_client_);
@@ -352,13 +369,15 @@ private:
   {
     node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-    action_executor_client_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-    // The activation is commented since in real plansys integration the action executor client is activated by the action executor node
+    action_executor_client_->trigger_transition(
+      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    // The activation is commented since in real plansys integration the action executor
+    // client is activated by the action executor node
     // when the action has to be executed
-    // action_executor_client_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    // action_executor_client_->trigger_transition(
+    // lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   }
-  std::shared_ptr<plansys2_actions_cost::MoveActionCostBase> move_action_cost_; 
-
+  std::shared_ptr<plansys2_actions_cost::MoveActionCostBase> move_action_cost_;
 };
 
 TEST_F(TestNode, MoveActionCostTestLength)
@@ -366,9 +385,10 @@ TEST_F(TestNode, MoveActionCostTestLength)
   auto msg_test = std::make_shared<plansys2_msgs::msg::ActionExecution>();
   msg_test->action = "move";
   auto move_action_cost = std::make_shared<plansys2_actions_cost::MoveActionCostLength>();
-  
+
   // Start pose
-  geometry_msgs::msg::PoseWithCovarianceStamped start_pose = geometry_msgs::msg::PoseWithCovarianceStamped();
+  geometry_msgs::msg::PoseWithCovarianceStamped start_pose =
+    geometry_msgs::msg::PoseWithCovarianceStamped();
   start_pose.pose.pose.position.x = 1.0;
   start_pose.pose.pose.position.y = 1.0;
 
@@ -382,26 +402,28 @@ TEST_F(TestNode, MoveActionCostTestLength)
   spin_all_nodes();
 
   // Measure the time nedded to call action cost
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();  
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
   call_action_cost(goal_pose, msg_test);
   std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-  std::cerr << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+  std::cerr << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(
+    end - begin).count() << "[µs]" << std::endl;
 
   execute();
 
   ASSERT_TRUE(is_message_received());
 
   auto current_pose = get_current_pose_in_move_action_cost();
-  std::cerr << "Stored pose: " << current_pose.pose.position.x << " " << current_pose.pose.position.y << std::endl;
-  std::cerr << "Start pose: " << start_pose.pose.pose.position.x << " " << start_pose.pose.pose.position.y << std::endl;
-  
+  std::cerr << "Stored pose: " << current_pose.pose.position.x << " " <<
+    current_pose.pose.position.y << std::endl;
+  std::cerr << "Start pose: " << start_pose.pose.pose.position.x << " " <<
+    start_pose.pose.pose.position.y << std::endl;
+
   ASSERT_DOUBLE_EQ(current_pose.pose.position.x, start_pose.pose.pose.position.x);
   ASSERT_DOUBLE_EQ(current_pose.pose.position.y, start_pose.pose.pose.position.y);
   auto last_message = get_last_message();
   ASSERT_EQ(last_message->action, "move");
   double expected_length = sqrt(2.0);
   ASSERT_DOUBLE_EQ((last_message->action_cost).nominal_cost, expected_length);
-
 }
 
 TEST_F(TestNode, MoveActionCostTestSmoothness)
@@ -411,7 +433,8 @@ TEST_F(TestNode, MoveActionCostTestSmoothness)
   auto move_action_cost = std::make_shared<plansys2_actions_cost::MoveActionCostSmoothness>();
 
   // Start pose (10° degrees)
-  geometry_msgs::msg::PoseWithCovarianceStamped start_pose = geometry_msgs::msg::PoseWithCovarianceStamped();
+  geometry_msgs::msg::PoseWithCovarianceStamped start_pose =
+    geometry_msgs::msg::PoseWithCovarianceStamped();
   start_pose.pose.pose.position.x = 1.0;
   start_pose.pose.pose.position.y = 0.0;
   start_pose.pose.pose.orientation.z = 0.08715574;
@@ -426,25 +449,28 @@ TEST_F(TestNode, MoveActionCostTestSmoothness)
 
   double expected_smoothness = 20.0 * (M_PI / 180.0);
   double tolerance = 1e-5;
-  
+
   initialize_move_action_cost(move_action_cost);
   publish_start_pose(start_pose);
   spin_all_nodes();
 
   // Measure the time nedded to call action cost
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();  
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
   call_action_cost(goal_pose, msg_test);
   // Measure the time nedded to call action cost
   std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-  std::cerr << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
-  
+  std::cerr << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(
+    end - begin).count() << "[µs]" << std::endl;
+
   execute();
-  
+
   auto current_pose = get_current_pose_in_move_action_cost();
 
-  std::cerr << "Stored pose: " << current_pose.pose.position.x << " " << current_pose.pose.position.y << std::endl;
-  std::cerr << "Start pose: " << start_pose.pose.pose.position.x << " " << start_pose.pose.pose.position.y << std::endl;
-  
+  std::cerr << "Stored pose: " << current_pose.pose.position.x << " " <<
+    current_pose.pose.position.y << std::endl;
+  std::cerr << "Start pose: " << start_pose.pose.pose.position.x << " " <<
+    start_pose.pose.pose.position.y << std::endl;
+
   ASSERT_DOUBLE_EQ(current_pose.pose.position.x, start_pose.pose.pose.position.x);
   ASSERT_DOUBLE_EQ(current_pose.pose.position.y, start_pose.pose.pose.position.y);
   ASSERT_TRUE(is_message_received());

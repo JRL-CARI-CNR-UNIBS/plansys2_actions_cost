@@ -28,16 +28,16 @@ namespace plansys2_actions_cost
 class MoveActionCostSmoothness : public MoveActionCostBase
 {
 public:
-    MoveActionCostSmoothness() {}
-    ~MoveActionCostSmoothness() {}
+  MoveActionCostSmoothness() {}
+  ~MoveActionCostSmoothness() {}
 
 protected:
-    PathSmoothness path_smoothness;
-    inline ActionCostPtr compute_cost_function() override
-    {
-        auto cost_function = path_smoothness.args_binder(std::ref(path_ptr_));
-        return cost_function();
-    }
+  PathSmoothness path_smoothness;
+  inline ActionCostPtr compute_cost_function() override
+  {
+    auto cost_function = path_smoothness.args_binder(std::ref(path_ptr_));
+    return cost_function();
+  }
 };
 
 }  // namespace plansys2_actions_cost

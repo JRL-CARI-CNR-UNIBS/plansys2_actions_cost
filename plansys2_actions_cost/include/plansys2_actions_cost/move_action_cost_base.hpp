@@ -17,6 +17,7 @@
 
 #include <utility>
 #include <functional>
+#include <memory>
 
 #include "plansys2_msgs/msg/action_cost.hpp"
 #include "plansys2_actions_cost/action_cost_base.hpp"
@@ -30,35 +31,39 @@ namespace plansys2_actions_cost
 class MoveActionCostBase : public ActionCostBase<geometry_msgs::msg::PoseStamped>
 {
 public:
-    MoveActionCostBase() {};
-    ~MoveActionCostBase() {};
+  MoveActionCostBase() {}
+  ~MoveActionCostBase() {}
 
-    void initialize(const plansys2::ActionExecutorClient::Ptr & action_executor_client) override;
+  void initialize(const plansys2::ActionExecutorClient::Ptr & action_executor_client) override;
 
-    virtual void compute_action_cost(const geometry_msgs::msg::PoseStamped & goal, 
-                                    const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
+  virtual void compute_action_cost(
+    const geometry_msgs::msg::PoseStamped & goal,
+    const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
 
-    virtual void update_action_cost(){};
-    geometry_msgs::msg::PoseStamped get_current_pose() {return current_pose_;};
+  virtual void update_action_cost() {}
+  geometry_msgs::msg::PoseStamped get_current_pose() {return current_pose_;}
+
 protected:
-    using ComputePathGoalHandle =
-        rclcpp_action::ClientGoalHandle<nav2_msgs::action::ComputePathToPose>;
-    using ComputePathFeedback =
-        const std::shared_ptr<const nav2_msgs::action::ComputePathToPose::Feedback>;
-    using ComputePathResult =
-        const ComputePathGoalHandle::WrappedResult;
+  using ComputePathGoalHandle =
+    rclcpp_action::ClientGoalHandle<nav2_msgs::action::ComputePathToPose>;
+  using ComputePathFeedback =
+    const std::shared_ptr<const nav2_msgs::action::ComputePathToPose::Feedback>;
+  using ComputePathResult =
+    const ComputePathGoalHandle::WrappedResult;
 
-    nav_msgs::msg::Path::SharedPtr path_ptr_;
-    rclcpp_action::Client<nav2_msgs::action::ComputePathToPose>::SharedPtr compute_path_action_client_;
+  using ActionToPose = nav2_msgs::action::ComputePathToPose;
 
-    virtual ActionCostPtr compute_cost_function() = 0;
+  nav_msgs::msg::Path::SharedPtr path_ptr_;
+  rclcpp_action::Client<ActionToPose>::SharedPtr compute_path_action_client_;
+
+  virtual ActionCostPtr compute_cost_function() = 0;
+
 private:
-    std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>> pose_sub_;
-    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
-    geometry_msgs::msg::PoseStamped current_pose_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_sub_;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
+  geometry_msgs::msg::PoseStamped current_pose_;
 
-    void current_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
-
+  void current_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
 };
 }  // namespace plansys2_actions_cost
 
