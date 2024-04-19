@@ -39,7 +39,8 @@ add_library(${PROJECT_NAME} SHARED
   src/cost_functions/path_cost.cpp
   src/plansys2_actions_cost/move_action_cost_base.cpp
   src/plansys2_actions_cost/move_action_cost_length.cpp
-  src/plansys2_actions_cost/move_action_cost_smoothness.cpp)
+  src/plansys2_actions_cost/move_action_cost_smoothness.cpp
+  src/plansys2_actions_cost/move_action_cost_map.cpp)
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
 add_executable(cost_test

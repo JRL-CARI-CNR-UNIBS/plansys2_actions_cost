@@ -132,8 +132,8 @@ int main(int argc, char ** argv)
   try {
     move_action_cost =
       move_action_cost_loader.createSharedInstance(
-      "plansys2_actions_cost::MoveActionCostSmoothness");
-    std::cerr << "MoveActionCostSmoothness created" << std::endl;
+      "plansys2_actions_cost::MoveActionCostMap");
+    std::cerr << "MoveActionCostMap created" << std::endl;
   } catch (pluginlib::PluginlibException & ex) {
     printf("The plugin failed to load for some reason. Error: %s\n", ex.what());
   }

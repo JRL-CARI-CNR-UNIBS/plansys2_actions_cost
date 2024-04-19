@@ -20,6 +20,7 @@
 
 #include "plansys2_actions_cost/move_action_cost_length.hpp"
 #include "plansys2_actions_cost/move_action_cost_smoothness.hpp"
+#include "plansys2_actions_cost/move_action_cost_map.hpp"
 
 #include "nav2_costmap_2d/costmap_2d_publisher.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -109,7 +110,37 @@ TEST(CostFunctionTest, PathSmoothnessTest)
   double tolerance = 1e-5;
   EXPECT_NEAR(actual_smoothness, expected_smoothness, tolerance);
 }
+class CostmapUtils
+{
+public:
+  CostmapUtils(
+    rclcpp_lifecycle::LifecycleNode::SharedPtr node,
+    std::string costmap_topic_name,
+    unsigned char default_value = 100)
+  : node_(node)
+  {
+    costmap_ = std::make_shared<nav2_costmap_2d::Costmap2D>(10, 10, 1.0, 0.0, 0.0);
+    for (unsigned int y = 0; y < costmap_->getSizeInCellsY(); y++) {
+      for (unsigned int x = 0; x < costmap_->getSizeInCellsX(); x++) {
+        costmap_->setCost(x, y, default_value);
+      }
+    }
 
+    costmap_pub_ = std::make_shared<nav2_costmap_2d::Costmap2DPublisher>(
+      node_->shared_from_this(), costmap_.get(), "", costmap_topic_name, true);
+
+    costmap_pub_->on_activate();
+  }
+  void publish_costmap()
+  {
+    costmap_pub_->publishCostmap();
+  }
+
+private:
+  std::shared_ptr<nav2_costmap_2d::Costmap2DPublisher> costmap_pub_;
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  std::shared_ptr<nav2_costmap_2d::Costmap2D> costmap_;
+};
 // Test case for path_cost
 TEST(CostFunctionTest, PathCostTest)
 {
@@ -352,6 +383,14 @@ public:
   {
     executor_.spin_some();
   }
+  void add_node_to_executor(rclcpp::Node::SharedPtr node)
+  {
+    executor_.add_node(node->get_node_base_interface());
+  }
+  void add_node_to_executor(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
+  {
+    executor_.add_node(node->get_node_base_interface());
+  }
 
 private:
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
@@ -478,9 +517,132 @@ TEST_F(TestNode, MoveActionCostTestSmoothness)
   auto last_message = get_last_message();
   ASSERT_EQ(last_message->action, "move");
 
-  double expected_length = sqrt(2.0);
   EXPECT_NEAR((last_message->action_cost).nominal_cost, expected_smoothness, tolerance);
 }
+
+TEST_F(TestNode, MoveActionCostTestCostmap)
+{
+  unsigned char default_costmap_value = 100;
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node_costmap");
+  add_node_to_executor(node);
+  auto costmap_utils =
+    std::make_shared<CostmapUtils>(node, "/fake_cost_map", default_costmap_value);
+
+  auto msg_test = std::make_shared<plansys2_msgs::msg::ActionExecution>();
+  msg_test->action = "move";
+  auto move_action_cost = std::make_shared<plansys2_actions_cost::MoveActionCostMap>();
+
+  // Start pose (10° degrees)
+  geometry_msgs::msg::PoseWithCovarianceStamped start_pose =
+    geometry_msgs::msg::PoseWithCovarianceStamped();
+  start_pose.pose.pose.position.x = 1.0;
+  start_pose.pose.pose.position.y = 0.0;
+  start_pose.pose.pose.orientation.z = 0.08715574;
+  start_pose.pose.pose.orientation.w = 0.9961947;
+
+  // Goal pose (30° degrees)
+  geometry_msgs::msg::PoseStamped goal_pose = geometry_msgs::msg::PoseStamped();
+  goal_pose.pose.position.x = 2.0;
+  goal_pose.pose.position.y = 0.0;
+  goal_pose.pose.orientation.z = 0.25881905;
+  goal_pose.pose.orientation.w = 0.96592583;
+
+  initialize_move_action_cost(move_action_cost);
+  publish_start_pose(start_pose);
+  costmap_utils->publish_costmap();
+  // rclcpp::spin_some(node->get_node_base_interface());
+  spin_all_nodes();
+
+  // Measure the time nedded to call action cost
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+  call_action_cost(goal_pose, msg_test);
+  // Measure the time nedded to call action cost
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::cerr << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(
+    end - begin).count() << "[µs]" << std::endl;
+
+  execute();
+
+  auto current_pose = get_current_pose_in_move_action_cost();
+
+  std::cerr << "Stored pose: " << current_pose.pose.position.x << " " <<
+    current_pose.pose.position.y << std::endl;
+  std::cerr << "Start pose: " << start_pose.pose.pose.position.x << " " <<
+    start_pose.pose.pose.position.y << std::endl;
+
+  ASSERT_DOUBLE_EQ(current_pose.pose.position.x, start_pose.pose.pose.position.x);
+  ASSERT_DOUBLE_EQ(current_pose.pose.position.y, start_pose.pose.pose.position.y);
+  ASSERT_TRUE(is_message_received());
+
+  auto last_message = get_last_message();
+  ASSERT_EQ(last_message->action, "move");
+
+  double expected_cost = default_costmap_value * 1 + default_costmap_value * std::pow(1.0, 1);
+  double tolerance = 1e-5;
+  EXPECT_NEAR((last_message->action_cost).nominal_cost, expected_cost, tolerance);
+  /*
+
+
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+
+  // node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  // node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  auto costmap_subscriber = std::make_unique<nav2_costmap_2d::CostmapSubscriber>(
+    node->shared_from_this(),
+    "/fake_cost_map_raw");
+
+  unsigned char default_value = 100;
+  auto costmap_to_send = std::make_shared<nav2_costmap_2d::Costmap2D>(10, 10, 1.0, 0.0, 0.0);
+  for (unsigned int y = 0; y < costmap_to_send->getSizeInCellsY(); y++) {
+    for (unsigned int x = 0; x < costmap_to_send->getSizeInCellsX(); x++) {
+      costmap_to_send->setCost(x, y, default_value);
+    }
+  }
+  auto costmap_publisher = std::make_shared<nav2_costmap_2d::Costmap2DPublisher>(
+    node->shared_from_this(), costmap_to_send.get(), "", "/fake_cost_map", true);
+
+  costmap_publisher->on_activate();
+  costmap_publisher->publishCostmap();
+
+  rclcpp::spin_some(node->get_node_base_interface());
+
+  auto costmap = costmap_subscriber->getCostmap();
+
+  double lambda_1 = 1;
+  double lambda_2 = 0.5;
+  double action_cost_lambda_1 = std::numeric_limits<double>::infinity();
+  double action_cost_lambda_2 = std::numeric_limits<double>::infinity();
+  if (costmap) {
+    std::cerr << costmap->getSizeInCellsX() << std::endl;
+    RCLCPP_INFO(node->get_logger(), "Costmap available");
+
+    plansys2_actions_cost::PathCost path_cost;
+
+    std::cerr << &path_cost << std::endl;
+    std::cerr << &path_cost << std::endl;
+
+    auto path_cost_function_lambda_1 = path_cost.args_binder(
+      std::ref(path_ptr), std::ref(
+        costmap), std::ref(lambda_1));
+    auto path_cost_function_lambda_2 = path_cost.args_binder(
+      std::ref(path_ptr), std::ref(
+        costmap), std::ref(lambda_2));
+
+    action_cost_lambda_1 = path_cost_function_lambda_1()->nominal_cost;
+    action_cost_lambda_2 = path_cost_function_lambda_2()->nominal_cost;
+  } else {
+    RCLCPP_INFO(node->get_logger(), "Costmap not available");
+  }
+  std::cerr << default_value * path_ptr->poses.size() << std::endl;
+
+  ASSERT_NEAR(action_cost_lambda_1, default_value * path_ptr->poses.size(), 1e-5);
+  ASSERT_NEAR(
+    action_cost_lambda_2, default_value * 1 + default_value * std::pow(lambda_2, 1),
+    1e-5);
+    */
+}
+
 
 int main(int argc, char ** argv)
 {

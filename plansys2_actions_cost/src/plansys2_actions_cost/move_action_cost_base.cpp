@@ -154,5 +154,4 @@ void MoveActionCostBase::current_pose_callback(
     current_pose_.pose.position.y);
 }
 
-
 }  // namespace plansys2_actions_cost
