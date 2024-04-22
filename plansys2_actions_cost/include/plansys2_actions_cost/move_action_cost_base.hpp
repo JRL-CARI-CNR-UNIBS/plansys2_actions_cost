@@ -15,6 +15,7 @@
 #ifndef PLANSYS2_ACTIONS_COST__MOVE_ACTION_COST_BASE_HPP_
 #define PLANSYS2_ACTIONS_COST__MOVE_ACTION_COST_BASE_HPP_
 
+#include <string>
 #include <utility>
 #include <functional>
 #include <memory>
@@ -57,6 +58,7 @@ protected:
   rclcpp_action::Client<ActionToPose>::SharedPtr compute_path_action_client_;
 
   virtual ActionCostPtr compute_cost_function() = 0;
+  std::string namespace_;
 
 private:
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_sub_;

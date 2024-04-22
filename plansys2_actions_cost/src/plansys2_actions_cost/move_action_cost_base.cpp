@@ -27,10 +27,20 @@ void MoveActionCostBase::initialize(
   }
   action_executor_client_ = action_executor_client;
 
+  // Retrieve namespace parameter
+  rcl_interfaces::msg::ParameterDescriptor param_desc;
+  param_desc.name = "namespace";
+  param_desc.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+  param_desc.description =
+    "Namespace of the action cost plugin. Default: ''";
+
+  action_executor_client_->declare_parameter("namespace", "", param_desc);
+  action_executor_client_->get_parameter("namespace", namespace_);
+
   compute_path_action_client_ =
     rclcpp_action::create_client<nav2_msgs::action::ComputePathToPose>(
     action_executor_client_->shared_from_this(),
-    "/compute_path_to_pose");
+    namespace_ + "/compute_path_to_pose");
 
   RCLCPP_INFO(action_executor_client_->get_logger(), "Waiting for compute path action server...");
 
@@ -45,10 +55,11 @@ void MoveActionCostBase::initialize(
       "Compute path action server not available after waiting");
   }
 
-  path_pub_ = action_executor_client_->create_publisher<nav_msgs::msg::Path>("/computed_path", 10);
+  path_pub_ = action_executor_client_->create_publisher<nav_msgs::msg::Path>(
+    namespace_ + "/computed_path", 10);
   pose_sub_ =
     action_executor_client_->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-    "/amcl_pose",
+    namespace_ + "/amcl_pose",
     10,
     std::bind(&MoveActionCostBase::current_pose_callback, this, std::placeholders::_1));
   RCLCPP_DEBUG(action_executor_client_->get_logger(), "[MoveActionCostBase] Correctly initialized");

@@ -135,7 +135,7 @@ int main(int argc, char ** argv)
       "plansys2_actions_cost::MoveActionCostMap");
     std::cerr << "MoveActionCostMap created" << std::endl;
   } catch (pluginlib::PluginlibException & ex) {
-    printf("The plugin failed to load for some reason. Error: %s\n", ex.what());
+    std::cerr << "The plugin failed to load for some reason. Error: " << ex.what() << std::endl;
   }
 
   /*
