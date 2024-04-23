@@ -526,7 +526,7 @@ TEST_F(TestNode, MoveActionCostTestCostmap)
   auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node_costmap");
   add_node_to_executor(node);
   auto costmap_utils =
-    std::make_shared<CostmapUtils>(node, "/fake_cost_map", default_costmap_value);
+    std::make_shared<CostmapUtils>(node, "/global_costmap/costmap", default_costmap_value);
 
   auto msg_test = std::make_shared<plansys2_msgs::msg::ActionExecution>();
   msg_test->action = "move";

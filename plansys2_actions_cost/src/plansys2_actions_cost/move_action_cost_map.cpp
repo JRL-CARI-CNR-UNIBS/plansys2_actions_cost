@@ -42,7 +42,7 @@ void MoveActionCostMap::initialize(
   }
   costmap_sub_ = std::make_unique<nav2_costmap_2d::CostmapSubscriber>(
     action_executor_client_->shared_from_this(),
-    namespace_ + "/fake_cost_map_raw");
+    namespace_ + "/global_costmap/costmap_raw");  // fake_cost_map_raw
 
 
   RCLCPP_DEBUG(action_executor_client_->get_logger(), "[MoveActionCostBase] Correctly initialized");

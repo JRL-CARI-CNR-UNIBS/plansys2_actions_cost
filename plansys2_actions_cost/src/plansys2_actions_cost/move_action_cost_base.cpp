@@ -20,13 +20,17 @@ namespace plansys2_actions_cost
 void MoveActionCostBase::initialize(
   const plansys2::ActionExecutorClient::Ptr & action_executor_client)
 {
-  current_pose_.pose.position.x = 10.0;
+  std::cerr << "Initialize action cost base" << std::endl;
+  // RCLCPP_DEBUG(action_executor_client_->get_logger(), "[MoveActionCostBase] PRE initialize");
+  // current_pose_.pose.position.x = 10.0;
   if (action_executor_client == nullptr) {
     std::cerr << "Action executor client is nullptr" << std::endl;
     return;
   }
+  std::cerr << "Action executor client is not nullptr" << std::endl;
   action_executor_client_ = action_executor_client;
-
+  // std::cerr << "Action executor client correctly initialized" << std::endl;
+  RCLCPP_DEBUG(action_executor_client_->get_logger(), "[MoveActionCostBase] After allocation");
   // Retrieve namespace parameter
   rcl_interfaces::msg::ParameterDescriptor param_desc;
   param_desc.name = "namespace";
@@ -102,10 +106,12 @@ void MoveActionCostBase::compute_action_cost(
       auto path = result.result->path;
       path_ptr_ = std::make_shared<nav_msgs::msg::Path>(path);
       action_cost = this->compute_cost_function();
+
       this->action_executor_client_->set_action_cost(action_cost, msg);
 
-      RCLCPP_DEBUG(
-        action_executor_client_->get_logger(), "Computed path cost: %f", action_cost->nominal_cost);
+      RCLCPP_INFO(
+        action_executor_client_->get_logger(),
+        "Computed path cost: %f", action_cost->nominal_cost);
       path_pub_->publish(path);
     };
 
@@ -157,8 +163,6 @@ void MoveActionCostBase::current_pose_callback(
   current_pose_.header = msg->header;
   current_pose_.pose = msg->pose.pose;
 
-  std::cerr << "Current pose: " << current_pose_.pose.position.x << " " <<
-    current_pose_.pose.position.y << std::endl;
   RCLCPP_DEBUG(
     action_executor_client_->get_logger(),
     "[MoveActionCostBase] Current pose: %f %f", current_pose_.pose.position.x,

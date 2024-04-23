@@ -48,6 +48,8 @@ ActionCostPtr compute_path_cost(
     n_pose++;
   }
   action_cost->nominal_cost = cumulative_cost;
+  std::cerr << "Path cost: " << action_cost->nominal_cost << std::endl;
+  action_cost->std_dev_cost = 0.0;
   return action_cost;
 }
 }  // namespace plansys2_actions_cost

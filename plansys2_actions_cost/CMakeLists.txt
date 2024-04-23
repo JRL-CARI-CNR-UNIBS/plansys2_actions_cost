@@ -5,7 +5,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -62,8 +62,8 @@ install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS
   ${PROJECT_NAME}
-  cost_test
-  EXPORT export_${PROJECT_NAME}
+  # cost_test
+  EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
@@ -82,7 +82,8 @@ ament_export_include_directories(include)
 ament_export_dependencies(${dependencies})
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(
-  export_${PROJECT_NAME}
+  ${PROJECT_NAME}
+  HAS_LIBRARY_TARGET
 )
 
 ament_package()
