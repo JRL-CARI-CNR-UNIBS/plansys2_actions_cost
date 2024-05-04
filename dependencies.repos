@@ -1,0 +1,9 @@
+repositories:
+  ros2_planning_system:
+    type: git
+    url: https://github.com/JRL-CARI-CNR-UNIBS/ros2_planning_system
+    version: auction
+  navigation2:
+    type: git
+    url: https://github.com/open-navigation/navigation2.git
+    version: main
