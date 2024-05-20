@@ -37,6 +37,7 @@ add_library(${PROJECT_NAME} SHARED
   src/cost_functions/path_length.cpp
   src/cost_functions/path_smoothness.cpp
   src/cost_functions/path_cost.cpp
+  src/plansys2_actions_cost/action_cost_base.cpp
   src/plansys2_actions_cost/move_action_cost_base.cpp
   src/plansys2_actions_cost/move_action_cost_length.cpp
   src/plansys2_actions_cost/move_action_cost_smoothness.cpp
