@@ -8,4 +8,8 @@
   <class type="plansys2_actions_cost::MoveActionCostMap" base_class_type="plansys2_actions_cost::MoveActionCostBase">
     <description>This is a plugin for Action Move and cost given by the Costmap</description>
   </class>
+  <class type="plansys2_actions_cost::MoveActionCostDuration" base_class_type="plansys2_actions_cost::MoveActionCostBase">
+    <description>This is a plugin for Action Move Duration Estimation</description>
+  </class>
+
 </library>

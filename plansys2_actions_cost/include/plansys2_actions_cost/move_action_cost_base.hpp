@@ -43,6 +43,7 @@ public:
 
   virtual void update_action_cost() {}
   geometry_msgs::msg::PoseStamped get_current_pose() {return current_pose_;}
+  std::shared_ptr<nav_msgs::msg::Path> get_path() {return path_ptr_;}
 
 protected:
   using ComputePathGoalHandle =

@@ -41,7 +41,8 @@ add_library(${PROJECT_NAME} SHARED
   src/plansys2_actions_cost/move_action_cost_base.cpp
   src/plansys2_actions_cost/move_action_cost_length.cpp
   src/plansys2_actions_cost/move_action_cost_smoothness.cpp
-  src/plansys2_actions_cost/move_action_cost_map.cpp)
+  src/plansys2_actions_cost/move_action_cost_map.cpp
+  src/plansys2_actions_cost/move_action_cost_duration.cpp)
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
 add_executable(cost_test
@@ -64,7 +65,7 @@ install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(TARGETS
   ${PROJECT_NAME}
   # cost_test
-  EXPORT ${PROJECT_NAME}
+  # EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
@@ -80,11 +81,11 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-ament_export_dependencies(${dependencies})
 ament_export_libraries(${PROJECT_NAME})
-ament_export_targets(
-  ${PROJECT_NAME}
-  HAS_LIBRARY_TARGET
-)
+ament_export_dependencies(${dependencies})
+# ament_export_targets(
+#   ${PROJECT_NAME}
+#   HAS_LIBRARY_TARGET
+# )
 
 ament_package()
