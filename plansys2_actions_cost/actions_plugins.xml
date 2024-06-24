@@ -12,4 +12,7 @@
     <description>This is a plugin for Action Move Duration Estimation</description>
   </class>
 
+  <class type="plansys2_actions_cost::MoveThroughPosesActionCostDuration" base_class_type="plansys2_actions_cost::MoveThroughPosesActionCostBase">
+    <description>This is a plugin for Action Move Through Poses Duration Estimation</description>
+  </class>
 </library>

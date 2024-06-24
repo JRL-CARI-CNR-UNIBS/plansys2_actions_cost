@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_actions_cost/move_action_cost_base.hpp"
+#include "plansys2_actions_cost/move_through_poses_action_cost_base.hpp"
+
+
 
 namespace plansys2_actions_cost
 {
 
-void MoveActionCostBase::initialize(
+void MoveThroughPosesActionCostBase::initialize(
   const plansys2::ActionExecutorClient::Ptr & action_executor_client)
 {
   std::cerr << "Initialize action cost base" << std::endl;
-  // RCLCPP_DEBUG(action_executor_client_->get_logger(), "[MoveActionCostBase] PRE initialize");
+  // RCLCPP_DEBUG(action_executor_client_->get_logger(), "[MoveThroughPosesActionCostBase] PRE initialize");
   // current_pose_.pose.position.x = 10.0;
   if (action_executor_client == nullptr) {
     std::cerr << "Action executor client is nullptr" << std::endl;
@@ -30,7 +32,7 @@ void MoveActionCostBase::initialize(
   std::cerr << "Action executor client is not nullptr" << std::endl;
   action_executor_client_ = action_executor_client;
   // std::cerr << "Action executor client correctly initialized" << std::endl;
-  RCLCPP_DEBUG(action_executor_client_->get_logger(), "[MoveActionCostBase] After allocation");
+  RCLCPP_DEBUG(action_executor_client_->get_logger(), "[MoveThroughPosesActionCostBase] After allocation");
   // Retrieve namespace parameter
   // rcl_interfaces::msg::ParameterDescriptor param_desc;
   // param_desc.name = "namespace";
@@ -42,9 +44,9 @@ void MoveActionCostBase::initialize(
   action_executor_client_->get_parameter("namespace", namespace_);
 
   compute_path_action_client_ =
-    rclcpp_action::create_client<nav2_msgs::action::ComputePathToPose>(
+    rclcpp_action::create_client<nav2_msgs::action::ComputePathThroughPoses>(
     action_executor_client_->shared_from_this(),
-    namespace_ + "/compute_path_to_pose");
+    namespace_ + "/compute_path_through_poses");
 
   RCLCPP_INFO(action_executor_client_->get_logger(), "Waiting for compute path action server...");
 
@@ -65,28 +67,28 @@ void MoveActionCostBase::initialize(
     action_executor_client_->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     namespace_ + "/amcl_pose",
     10,
-    std::bind(&MoveActionCostBase::current_pose_callback, this, std::placeholders::_1));
-  RCLCPP_DEBUG(action_executor_client_->get_logger(), "[MoveActionCostBase] Correctly initialized");
+    std::bind(&MoveThroughPosesActionCostBase::current_pose_callback, this, std::placeholders::_1));
+  RCLCPP_DEBUG(action_executor_client_->get_logger(), "[MoveThroughPosesActionCostBase] Correctly initialized");
 }
 
-void MoveActionCostBase::compute_action_cost(
-  const geometry_msgs::msg::PoseStamped & goal,
+void MoveThroughPosesActionCostBase::compute_action_cost(
+  const std::vector<geometry_msgs::msg::PoseStamped> & goal,
   const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
 {
   auto send_goal_options =
-    rclcpp_action::Client<nav2_msgs::action::ComputePathToPose>::SendGoalOptions();
+    rclcpp_action::Client<nav2_msgs::action::ComputePathThroughPoses>::SendGoalOptions();
 
   // Feedback callbkack
   send_goal_options.feedback_callback = [this](
-    ComputePathGoalHandle::SharedPtr goal_handle,
-    ComputePathFeedback feedback)
+    ComputePathThroughPosesGoalHandle::SharedPtr goal_handle,
+    ComputePathThroughPosesFeedback feedback)
     {
       RCLCPP_DEBUG(
         action_executor_client_->get_logger(),
         "Feedback received from action cost computation (computing)");
     };
   // Result callbkack -> Path
-  send_goal_options.result_callback = [this, msg](ComputePathResult & result)
+  send_goal_options.result_callback = [this, msg](ComputePathThroughPosesResult & result)
     {
       ActionCostPtr action_cost = std::make_shared<plansys2_msgs::msg::ActionCost>();
 
@@ -116,7 +118,7 @@ void MoveActionCostBase::compute_action_cost(
     };
 
   send_goal_options.goal_response_callback =
-    [this, msg](const ComputePathGoalHandle::SharedPtr & goal_handle)
+    [this, msg](const ComputePathThroughPosesGoalHandle::SharedPtr & goal_handle)
     {
       if (!goal_handle) {
         RCLCPP_DEBUG(action_executor_client_->get_logger(), "Goal was rejected by server");
@@ -130,42 +132,42 @@ void MoveActionCostBase::compute_action_cost(
           action_executor_client_->get_logger(), "Goal accepted by server, waiting for result");
       }
     };
-  nav2_msgs::action::ComputePathToPose::Goal path_to_pose_goal =
-    nav2_msgs::action::ComputePathToPose::Goal();
+  nav2_msgs::action::ComputePathThroughPoses::Goal path_through_poses_goal =
+    nav2_msgs::action::ComputePathThroughPoses::Goal();
   // TODO(samuele): Retrieve this as a parameter in initialize method
-  path_to_pose_goal.planner_id = "GridBased";
-  path_to_pose_goal.start.header.frame_id = "map";
-  path_to_pose_goal.start = current_pose_;
-  path_to_pose_goal.goal = goal;
+  path_through_poses_goal.planner_id = "GridBased";
+  path_through_poses_goal.start.header.frame_id = "map";
+  path_through_poses_goal.start = current_pose_;
+  path_through_poses_goal.goals = goal;
 
   auto future_goal_handle = compute_path_action_client_->async_send_goal(
-    path_to_pose_goal,
+    path_through_poses_goal,
     send_goal_options);
 
   RCLCPP_DEBUG(
     action_executor_client_->get_logger(),
-    "Start pose: %f %f", path_to_pose_goal.start.pose.position.x,
-    path_to_pose_goal.start.pose.position.y);
-  RCLCPP_DEBUG(
-    action_executor_client_->get_logger(),
-    "Goal pose: %f %f", path_to_pose_goal.goal.pose.position.x,
-    path_to_pose_goal.goal.pose.position.y);
+    "Start pose: %f %f", path_through_poses_goal.start.pose.position.x,
+    path_through_poses_goal.start.pose.position.y);
+  // RCLCPP_DEBUG(
+  //   action_executor_client_->get_logger(),
+  //   "Goal pose: %f %f", path_through_poses_goal.goal.pose.position.x,
+  //   path_through_poses_goal.goal.pose.position.y);
   RCLCPP_DEBUG(action_executor_client_->get_logger(), "Waiting for result...");
 }
 
-void MoveActionCostBase::current_pose_callback(
+void MoveThroughPosesActionCostBase::current_pose_callback(
   const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
 {
   RCLCPP_DEBUG(
     action_executor_client_->get_logger(),
-    "[MoveActionCostBase] Callback received");
+    "[MoveThroughPosesActionCostBase] Callback received");
 
   current_pose_.header = msg->header;
   current_pose_.pose = msg->pose.pose;
 
   RCLCPP_DEBUG(
     action_executor_client_->get_logger(),
-    "[MoveActionCostBase] Current pose: %f %f", current_pose_.pose.position.x,
+    "[MoveThroughPosesActionCostBase] Current pose: %f %f", current_pose_.pose.position.x,
     current_pose_.pose.position.y);
 }
 

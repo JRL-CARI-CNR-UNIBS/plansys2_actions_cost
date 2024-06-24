@@ -42,7 +42,10 @@ add_library(${PROJECT_NAME} SHARED
   src/plansys2_actions_cost/move_action_cost_length.cpp
   src/plansys2_actions_cost/move_action_cost_smoothness.cpp
   src/plansys2_actions_cost/move_action_cost_map.cpp
-  src/plansys2_actions_cost/move_action_cost_duration.cpp)
+  src/plansys2_actions_cost/move_action_cost_duration.cpp
+  src/plansys2_actions_cost/move_through_poses_action_cost_base.cpp
+  src/plansys2_actions_cost/move_through_poses_action_cost_duration.cpp
+  )
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
 add_executable(cost_test
